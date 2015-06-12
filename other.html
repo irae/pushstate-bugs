@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Other page</title>
+  <meta name="viewport" content="width=device-width">
+  <script type="text/javascript">
+    /* exported goBack */
+    function goBack(event) {
+      event.preventDefault();
+      window.history.back();
+    }
+  </script>
+</head>
+<body>
+  <h2>You are on other.html</h2>
+  <p>Steps to reproduce</p>
+  <ol start="4">
+    <li>Click back on the browser button <a href="#back" onclick="goBack(event)">(or here to javascript back)</a></li>
+  </ol>
+</body>
+</html>
