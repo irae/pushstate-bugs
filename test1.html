@@ -3,76 +3,55 @@
 <head>
   <title>Test 1</title>
   <meta name="viewport" content="width=device-width">
+</head>
+<body>
+  <h2>You are on test1.html</h2>
+  <ol>
+    <li>During this test, monitor network traffic</li>
+    <li><button onclick="clickToPush()">Click to pushState to test2.html</button></li>
+    <li>On test2.html, <a href="http://wikipedia.org/">Click on this link</a> to navigate to wikipedia</li>
+    <li>Then come back here by pressing back button on the browser</li>
+  </ol>
   <script type="text/javascript">
     /* global console */
     /* exported clickToPush */
 
-    console.log('Javascript start');
+    setTimeout(function() {
+      window.history.replaceState(document.querySelector('h2').innerText, document.title, document.location.href);
+    }, 100);
 
-    // if(window.history.state) {
-    //   console.log('Current window.history.state', window.history.state);
-    // } else {
-    //   console.log('window.history.state not present');
-    // }
-
-    var currentText = 'You are on test1.html';
-    window.history.replaceState({theTitle: currentText}, document.title, document.location.href);
-    console.log('replacedState');
-    console.log('load');
-
-    window.addEventListener('popstate', function(event) {
-      console.log('popstate', (event.state ? 'withState ' + JSON.stringify(event.state) : 'emptyState'));
-      var newTitle = event.state && event.state.theTitle;
-      if(newTitle) {
-        setTitle(newTitle);
-        if(/test2.html/.test(newTitle) && !document.querySelector('.success')) {
-          var div = document.createElement('div');
-          div.className = 'success';
-          div.innerHTML = '<h3 class="success">Test finished! </h3>';
-          div.innerHTML += '<p>Now check if your server was hit for test2.html</p>';
-          document.querySelector('body').appendChild(div);
-        }
-      }
-    });
-
-    function clickToPush(event) {
-      event.preventDefault();
+    function clickToPush() {
       console.log('click');
       setTimeout(afterAjax, 100);
     }
 
     function afterAjax() {
-      console.log('Simulated Ajax Response');
+      // console.log('Simulated Ajax Response');
+      var newTitle = 'Test 2';
       var newText = "You are on test2.html via pushState";
-      window.history.pushState( {theTitle: newText}, 'Test 2', '/test2.html');
+      window.history.pushState(newText, newTitle, '/test2.html');
+      document.title = newTitle;
       setTitle(newText);
-      addItem();
     }
 
     function setTitle(theTitle) {
       document.querySelector('h2').innerHTML = theTitle;
     }
 
-    function addItem() {
-      if(!document.querySelector('.added')) {
-        var li = document.createElement('li');
-        li.className = 'added';
-        li.innerHTML = 'Now that you are on test2.html, <a href="http://wikipedia.org/">Click on this link</a> to navigate to wikipedia.';
-        document.querySelector('ol').appendChild(li);
-        li = document.createElement('li');
-        li.innerHTML = 'Then come back here by pressing back button on the browser';
-        document.querySelector('ol').appendChild(li);
+    window.addEventListener('popstate', function(event) {
+      console.log('popstate', (event.state ? 'withState ' + JSON.stringify(event.state) : 'emptyState'));
+      var newTitle = event.state;
+      if(newTitle) {
+        setTitle(newTitle);
+        if(/2/.test(newTitle) && !document.querySelector('.success')) {
+          var div = document.createElement('div');
+          div.className = 'success';
+          div.innerHTML = '<h3 class="success">Test finished! </h3>';
+          div.innerHTML += '<p>Now check if your server was hit for test2.html, we expect you didn\'t</p>';
+          document.querySelector('body').appendChild(div);
+        }
       }
-    }
-
+    });
   </script>
-</head>
-<body>
-  <h2>You are on test1.html</h2>
-  <p>Steps to reproduce</p>
-  <ol>
-    <li>Open you network access logs from your server</li>
-    <li><a onclick="clickToPush(event)" href='/test2.html'>Click on this link</a> to pushState to test2.html</li>
-  </ol>
 </body>
 </html>
