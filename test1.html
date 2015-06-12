@@ -9,38 +9,50 @@
   <ol>
     <li>During this test, monitor network traffic</li>
     <li><button onclick="clickToPush()">Click to pushState to test2.html</button></li>
-    <li>On test2.html, <a href="http://wikipedia.org/">Click on this link</a> to navigate to wikipedia</li>
+    <li>On test2.html, <a onclick="clickToExternal(event)" href="http://bit.ly/1FdDAfA">Click on this link</a> to navigate to wikipedia</li>
     <li>Then come back here by pressing back button on the browser</li>
   </ol>
   <script type="text/javascript">
     /* global console */
-    /* exported clickToPush */
+    /* exported clickToPush, clickToExternal */
 
-    setTimeout(function() {
-      window.history.replaceState(document.querySelector('h2').innerText, document.title, document.location.href);
-    }, 100);
-
-    function clickToPush() {
-      console.log('click');
-      setTimeout(afterAjax, 100);
+    function clickToExternal(event) {
+      console.log('clickToExternal');
+      event.preventDefault();
+      event.stopPropagation();
+      setTimeout(simulatedInstrumentationDelay.bind(null, ''+event.target.href), 200);
     }
 
-    function afterAjax() {
-      // console.log('Simulated Ajax Response');
+    function simulatedInstrumentationDelay(url) {
+      console.log('document.location.assign');
+      document.location.assign(url);
+    }
+
+    function clickToPush() {
+      console.log('clickToPush');
       var newTitle = 'Test 2';
-      var newText = "You are on test2.html via pushState";
-      window.history.pushState(newText, newTitle, '/test2.html');
       document.title = newTitle;
-      setTitle(newText);
+      console.log("window.history.pushState");
+      window.history.pushState({
+        documentTitle: newTitle,
+      }, '', document.location.origin + '/test2.html');
+      setTimeout(simulatedAjaxResponse, 100);
+    }
+
+    function simulatedAjaxResponse() {
+      console.log('simulatedAjaxResponse');
+      setTitle("You are on test2.html via pushState");
+      saveCurrentState();
     }
 
     function setTitle(theTitle) {
       document.querySelector('h2').innerHTML = theTitle;
     }
 
-    window.addEventListener('popstate', function(event) {
+    console.log("window.addEventListener('popstate'");
+    window.addEventListener('popstate', function popstateHandler(event) {
       console.log('popstate', (event.state ? 'withState ' + JSON.stringify(event.state) : 'emptyState'));
-      var newTitle = event.state;
+      var newTitle = event.state && event.state.pageText;
       if(newTitle) {
         setTitle(newTitle);
         if(/2/.test(newTitle) && !document.querySelector('.success')) {
@@ -52,6 +64,23 @@
         }
       }
     });
+
+    console.log("document.addEventListener('DOMContentLoaded'");
+    document.addEventListener('DOMContentLoaded', function DOMContentLoadedHandler() {
+      setTimeout(function someTimeAfterDOMContentLoaded() {
+        saveCurrentState();
+        saveCurrentState();
+      }, 100);
+    });
+
+    function saveCurrentState() {
+      console.log("window.history.replaceState");
+      window.history.replaceState({
+        documentTitle: document.title,
+        pageText: document.querySelector('h2').innerText
+      }, '', document.location.href);
+    }
+
   </script>
 </body>
 </html>
